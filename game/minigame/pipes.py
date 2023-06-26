@@ -47,52 +47,60 @@ class Way:
         self._left = left
         self.is_source = is_source
         self.is_receiver = is_receiver
-        self.rotate = rotate
+        self.position = rotate
         self.image = image
 
     @property
     def up(self):
-        if self.rotate == RotatedEnum.ZERO:
+        if self.position == RotatedEnum.ZERO:
             return self._up
-        elif self.rotate == RotatedEnum.NINETY:
+        elif self.position == RotatedEnum.NINETY:
             return self._right
-        elif self.rotate == RotatedEnum.ONE_EIGHTY:
+        elif self.position == RotatedEnum.ONE_EIGHTY:
             return self._down
-        elif self.rotate == RotatedEnum.TWO_SEVENTY:
+        elif self.position == RotatedEnum.TWO_SEVENTY:
             return self._left
 
     @property
     def down(self):
-        if self.rotate == RotatedEnum.ZERO:
+        if self.position == RotatedEnum.ZERO:
             return self._down
-        elif self.rotate == RotatedEnum.NINETY:
+        elif self.position == RotatedEnum.NINETY:
             return self._left
-        elif self.rotate == RotatedEnum.ONE_EIGHTY:
+        elif self.position == RotatedEnum.ONE_EIGHTY:
             return self._up
-        elif self.rotate == RotatedEnum.TWO_SEVENTY:
+        elif self.position == RotatedEnum.TWO_SEVENTY:
             return self._right
 
     @property
     def right(self):
-        if self.rotate == RotatedEnum.ZERO:
+        if self.position == RotatedEnum.ZERO:
             return self._right
-        elif self.rotate == RotatedEnum.NINETY:
+        elif self.position == RotatedEnum.NINETY:
             return self._down
-        elif self.rotate == RotatedEnum.ONE_EIGHTY:
+        elif self.position == RotatedEnum.ONE_EIGHTY:
             return self._left
-        elif self.rotate == RotatedEnum.TWO_SEVENTY:
+        elif self.position == RotatedEnum.TWO_SEVENTY:
             return self._up
 
     @property
     def left(self):
-        if self.rotate == RotatedEnum.ZERO:
+        if self.position == RotatedEnum.ZERO:
             return self._left
-        elif self.rotate == RotatedEnum.NINETY:
+        elif self.position == RotatedEnum.NINETY:
             return self._up
-        elif self.rotate == RotatedEnum.ONE_EIGHTY:
+        elif self.position == RotatedEnum.ONE_EIGHTY:
             return self._right
-        elif self.rotate == RotatedEnum.TWO_SEVENTY:
+        elif self.position == RotatedEnum.TWO_SEVENTY:
             return self._down
+
+    def rotate(self):
+        if self.position == RotatedEnum.ZERO:
+            self.position = RotatedEnum.NINETY
+        elif self.position == RotatedEnum.NINETY:
+            self.position = RotatedEnum.ONE_EIGHTY
+        elif self.position == RotatedEnum.ONE_EIGHTY:
+            self.position = RotatedEnum.TWO_SEVENTY
 
 
 class FourWay(Way):

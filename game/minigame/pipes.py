@@ -1,4 +1,7 @@
 from enum import Enum
+from typing import Union
+import pythonpackages.renpygame as pygame
+from pythonpackages.renpygame.event import EventType
 
 
 class RotatedEnum(Enum):
@@ -8,7 +11,7 @@ class RotatedEnum(Enum):
     TWO_SEVENTY = 3
 
 
-class Way:
+class Way(pygame.sprite.Sprite):
     image = None
     image_water = None
     image_source = None
@@ -18,6 +21,14 @@ class Way:
     def __init__(
         self,
         image: str,
+        containers: list[
+            Union[
+                pygame.sprite.AbstractGroup,
+                pygame.sprite.Group,
+                pygame.sprite.RenderUpdates,
+                pygame.sprite.GroupSingle,
+            ]
+        ],
         up: bool,
         down: bool,
         right: bool,
@@ -26,6 +37,8 @@ class Way:
         is_receiver: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
+        pygame.sprite.Sprite.__init__(self, containers)
+        self.rect = self.image.get_rect()
         self._up = up
         self._down = down
         self._right = right
@@ -92,11 +105,20 @@ class Way:
 class FourWay(Way):
     def __init__(
         self,
+        containers: list[
+            Union[
+                pygame.sprite.AbstractGroup,
+                pygame.sprite.Group,
+                pygame.sprite.RenderUpdates,
+                pygame.sprite.GroupSingle,
+            ]
+        ],
         is_source: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
         super().__init__(
             "Four_Way",
+            containers,
             True,
             True,
             True,
@@ -110,11 +132,20 @@ class FourWay(Way):
 class ThreeWay(Way):
     def __init__(
         self,
+        containers: list[
+            Union[
+                pygame.sprite.AbstractGroup,
+                pygame.sprite.Group,
+                pygame.sprite.RenderUpdates,
+                pygame.sprite.GroupSingle,
+            ]
+        ],
         is_source: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
         super().__init__(
             "Three_Way",
+            containers,
             True,
             True,
             True,
@@ -128,11 +159,20 @@ class ThreeWay(Way):
 class TwoWay(Way):
     def __init__(
         self,
+        containers: list[
+            Union[
+                pygame.sprite.AbstractGroup,
+                pygame.sprite.Group,
+                pygame.sprite.RenderUpdates,
+                pygame.sprite.GroupSingle,
+            ]
+        ],
         is_source: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
         super().__init__(
             "Two_Way",
+            containers,
             True,
             True,
             False,
@@ -146,11 +186,20 @@ class TwoWay(Way):
 class OneWay(Way):
     def __init__(
         self,
+        containers: list[
+            Union[
+                pygame.sprite.AbstractGroup,
+                pygame.sprite.Group,
+                pygame.sprite.RenderUpdates,
+                pygame.sprite.GroupSingle,
+            ]
+        ],
         is_source: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
         super().__init__(
             "One_Way",
+            containers,
             True,
             False,
             False,
@@ -159,6 +208,11 @@ class OneWay(Way):
             False,
             rotate,
         )
+
+
+class SharedData:
+    def __init__(self):
+        self.all = None
 
 
 a = [
@@ -204,3 +258,39 @@ def check_connections_helper(
     if matrix[i][j].right and not visited[i][j + 1]:
         visited[i][j + 1] = True
         check_connections_helper(matrix, i, j + 1, visited)
+
+
+def main():
+    # # Initialize a shared data
+    global sh
+
+    if not sh:
+        sh = SharedData()
+
+    # Initialize a game
+    displayable_with_logic = pygame.RenpyGameByEvent(
+        render_lambda=my_game_first_step,
+        event_lambda=game_event,
+    )
+    # show amd start the game
+    displayable_with_logic.show()
+
+    # * after show() the game will be running when the game is over
+
+    # clean up the shared data
+    score = sh.score
+    sh = None
+    # return to renpy
+    return score
+
+
+def my_game_first_step(width: int, height: int, st: float, at: float) -> pygame.Surface:
+    bestdepth = pygame.display.mode_ok((0, 0), 0, 32)
+    screen = pygame.display.set_mode((0, 0), 0, bestdepth)
+
+    return screen
+
+
+def game_event(ev: EventType, x: int, y: int, st: float):
+    # TODO https://stackoverflow.com/questions/10990137/pygame-mouse-clicking-detection
+    return

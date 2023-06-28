@@ -250,7 +250,7 @@ class OneWay(Way):
             False,
             False,
             False,
-            False,
+            True,
             rotate,
         )
 

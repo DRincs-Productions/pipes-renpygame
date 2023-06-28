@@ -12,7 +12,7 @@ class RotatedEnum(Enum):
 
 
 class Way(pygame.sprite.Sprite):
-    image = None
+    image: pygame.Surface
     image_water = None
     image_source = None
     image_receiver = None
@@ -20,7 +20,8 @@ class Way(pygame.sprite.Sprite):
 
     def __init__(
         self,
-        image: str,
+        image: pygame.Surface,
+        image_water: pygame.Surface,
         containers: list[
             Union[
                 pygame.sprite.AbstractGroup,
@@ -47,6 +48,7 @@ class Way(pygame.sprite.Sprite):
         self.is_receiver = is_receiver
         self.position = rotate
         self.image = image
+        self.image_water = image_water
         self.have_water = False
 
     @property
@@ -113,11 +115,24 @@ class FourWay(Way):
                 pygame.sprite.GroupSingle,
             ]
         ],
+        st: float,
+        at: float,
         is_source: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
+        if is_source:
+            image = pygame.image.load("Four_Way_Source_Node.webp").convert(st, at)
+            image_water = image
+        else:
+            image = pygame.image.load("Four_Way_Tube_Without_Water.webp").convert(
+                st, at
+            )
+            image_water = pygame.image.load("Four_Way_Tube_With_Water.webp").convert(
+                st, at
+            )
         super().__init__(
-            "Four_Way",
+            image,
+            image_water,
             containers,
             True,
             True,
@@ -140,11 +155,24 @@ class ThreeWay(Way):
                 pygame.sprite.GroupSingle,
             ]
         ],
+        st: float,
+        at: float,
         is_source: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
+        if is_source:
+            image = pygame.image.load("Three_Way_Source_Node.webp").convert(st, at)
+            image_water = image
+        else:
+            image = pygame.image.load("Three_Way_Tube_Without_Water.webp").convert(
+                st, at
+            )
+            image_water = pygame.image.load("Three_Way_Tube_With_Water.webp").convert(
+                st, at
+            )
         super().__init__(
-            "Three_Way",
+            image,
+            image_water,
             containers,
             True,
             True,
@@ -167,11 +195,22 @@ class TwoWay(Way):
                 pygame.sprite.GroupSingle,
             ]
         ],
+        st: float,
+        at: float,
         is_source: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
+        if is_source:
+            image = pygame.image.load("Two_Way_Source_Node.webp").convert(st, at)
+            image_water = image
+        else:
+            image = pygame.image.load("Two_Way_Tube_Without_Water.webp").convert(st, at)
+            image_water = pygame.image.load("Two_Way_Tube_With_Water.webp").convert(
+                st, at
+            )
         super().__init__(
-            "Two_Way",
+            image,
+            image_water,
             containers,
             True,
             True,
@@ -194,17 +233,23 @@ class OneWay(Way):
                 pygame.sprite.GroupSingle,
             ]
         ],
-        is_source: bool = False,
+        st: float,
+        at: float,
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
+        image = pygame.image.load("Straight_Tube_With_Water.webp").convert(st, at)
+        image_water = pygame.image.load("Straight_Tube_Without_Water.webp").convert(
+            st, at
+        )
         super().__init__(
-            "One_Way",
+            image,
+            image_water,
             containers,
             True,
             False,
             False,
             False,
-            is_source,
+            False,
             False,
             rotate,
         )

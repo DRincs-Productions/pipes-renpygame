@@ -3,6 +3,9 @@ from typing import Union
 import pythonpackages.renpygame as pygame
 from pythonpackages.renpygame.event import EventType
 
+game_screen_size: tuple[int, int] = (0, 0)
+game_margin = 0
+
 
 class RotatedEnum(Enum):
     ZERO = 0
@@ -11,13 +14,18 @@ class RotatedEnum(Enum):
     TWO_SEVENTY = 3
 
 
-class Way(pygame.sprite.Sprite):
-    image: pygame.Surface
-    image_water = None
-    image_source = None
-    image_receiver = None
-    image_water = None
+class PuzzleEnum(Enum):
+    OneWay = 10
+    OneWaySource = 11
+    TwoWay = 20
+    TwoWaySource = 21
+    ThreeWay = 30
+    ThreeWaySource = 31
+    FourWay = 40
+    FourWaySource = 41
 
+
+class Way(pygame.sprite.Sprite):
     def __init__(
         self,
         image: pygame.Surface,
@@ -38,8 +46,12 @@ class Way(pygame.sprite.Sprite):
         is_receiver: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
+        self.image = image
+        self.image_water = image_water
+
         pygame.sprite.Sprite.__init__(self, containers)
         self.rect = self.image.get_rect()
+
         self._up = up
         self._down = down
         self._right = right
@@ -47,8 +59,6 @@ class Way(pygame.sprite.Sprite):
         self.is_source = is_source
         self.is_receiver = is_receiver
         self.position = rotate
-        self.image = image
-        self.image_water = image_water
         self.have_water = False
 
     @property
@@ -235,12 +245,17 @@ class OneWay(Way):
         ],
         st: float,
         at: float,
+        is_source: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
-        image = pygame.image.load("Straight_Tube_With_Water.webp").convert(st, at)
-        image_water = pygame.image.load("Straight_Tube_Without_Water.webp").convert(
-            st, at
-        )
+        if is_source:
+            image = pygame.image.load("One_Way_Source_Node.webp").convert(st, at)
+            image_water = image
+        else:
+            image = pygame.image.load("Receiver_Node_With_Water.webp").convert(st, at)
+            image_water = pygame.image.load("Receiver_Node_Without_Water.webp").convert(
+                st, at
+            )
         super().__init__(
             image,
             image_water,
@@ -249,8 +264,8 @@ class OneWay(Way):
             False,
             False,
             False,
-            False,
-            True,
+            is_source,
+            not is_source,
             rotate,
         )
 
@@ -260,12 +275,37 @@ class SharedData:
         self.all = None
 
 
-a = [
-    [OneWay(), TwoWay(), ThreeWay(), FourWay()],
-    [OneWay(), TwoWay(), ThreeWay(), FourWay()],
-    [OneWay(), TwoWay(), ThreeWay(), FourWay()],
-    [OneWay(), TwoWay(), ThreeWay(), FourWay()],
-    [OneWay(), TwoWay(), ThreeWay(), FourWay()],
+first_puzzle = [
+    [
+        OneWay(containers, st, at),
+        TwoWay(containers, st, at),
+        ThreeWay(containers, st, at),
+        FourWay(containers, st, at),
+    ],
+    [
+        OneWay(containers, st, at),
+        TwoWay(containers, st, at),
+        ThreeWay(containers, st, at),
+        FourWay(containers, st, at),
+    ],
+    [
+        OneWay(containers, st, at),
+        TwoWay(containers, st, at),
+        ThreeWay(containers, st, at),
+        FourWay(containers, st, at),
+    ],
+    [
+        OneWay(containers, st, at),
+        TwoWay(containers, st, at),
+        ThreeWay(containers, st, at),
+        FourWay(containers, st, at),
+    ],
+    [
+        OneWay(containers, st, at),
+        TwoWay(containers, st, at),
+        ThreeWay(containers, st, at),
+        FourWay(containers, st, at),
+    ],
 ]
 
 
@@ -305,7 +345,11 @@ def check_connections_helper(
         check_connections_helper(matrix, i, j + 1, visited)
 
 
-def main():
+def main(size: tuple[int, int], margin=0):
+    global game_screen_size
+    game_screen_size = size
+    global game_margin
+    game_margin = margin
     # # Initialize a shared data
     global sh
 
@@ -317,7 +361,7 @@ def main():
         render_lambda=my_game_first_step,
         event_lambda=game_event,
     )
-    # show amd start the game
+    # show and start the game
     displayable_with_logic.show()
 
     # * after show() the game will be running when the game is over

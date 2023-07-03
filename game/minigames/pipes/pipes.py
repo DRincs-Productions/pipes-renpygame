@@ -139,6 +139,7 @@ class Way(pygame.sprite.Sprite):
             self.rotate_position = RotatedEnum.TWO_SEVENTY
 
     def update_image(self, st: float, at: float):
+        print(self.position, self.have_water)
         if self.have_water:
             self.rect = self.image.get_rect()
         else:
@@ -326,6 +327,7 @@ class SharedData:
     def __init__(self):
         self.all = pygame.sprite.RenderUpdates()
         self.matrix: list[list[Way]] = []
+        self.source_list: list[tuple[int, int]] = []
 
 
 first_puzzle = [
@@ -470,6 +472,7 @@ def my_game_first_step(width: int, height: int, st: float, at: float) -> pygame.
     screen = pygame.display.set_mode((0, 0), 0, bestdepth)
 
     sh.matrix = convert_puzzle(first_puzzle, [sh.all], st, at)
+    sh.source_list = findSource(sh.matrix)
 
     # draw the scene
     dirty = sh.all.draw(screen)
@@ -483,7 +486,7 @@ def game_event(ev: EventType, x: int, y: int, st: float, redraw: Callable[[int],
         sh.all.update(ev, x, y, st)
 
     if ev.type == CHECK_CONNECTIONS_EVENT:
-        visited = check_connections(sh.matrix, findSource(sh.matrix))
+        visited = check_connections(sh.matrix, sh.source_list)
         myevent = pygame.event.Event(SEND_WATER_EVENT, visited=visited)
         pygame.event.post(myevent)
 

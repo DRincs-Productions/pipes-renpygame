@@ -69,19 +69,18 @@ class Way(pygame.sprite.Sprite):
         self.rotate_position = rotate
         self.have_water = False
 
-    def update(self, events):
-        for event in events:
-            if event.type == pygame.MOUSEBUTTONUP:
-                if self.rect.collidepoint(event.pos):
-                    self.rotate()
-                    myevent = pygame.event.Event(CHECK_CONNECTIONS_EVENT)
-                    pygame.event.post(myevent)
-            elif event.type == SEND_WATER_EVENT:
-                if event.visited[self.position[0]][self.position[1]]:
-                    self.have_water = True
-                else:
-                    self.have_water = False
-                self.image = self.image_water if self.have_water else self.image
+    def update(self, ev: EventType, x: int, y: int, st: float):
+        if ev.type == pygame.MOUSEBUTTONUP:
+            if self.rect.collidepoint((x, y)):
+                print("clicked on", self.position)
+                self.rotate()
+                pygame.time.set_timer(CHECK_CONNECTIONS_EVENT, 0)
+        elif ev.type == SEND_WATER_EVENT:
+            if ev.visited[self.position[0]][self.position[1]]:
+                self.have_water = True
+            else:
+                self.have_water = False
+            self.image = self.image_water if self.have_water else self.image
 
     @property
     def up(self):
@@ -357,6 +356,7 @@ def convert_puzzle(
     for y in range(len(puzzle)):
         res.append([])
         for x in range(len(puzzle[y])):
+            print(y, x)
             rotate = random.choice(
                 [
                     RotatedEnum.ZERO,
@@ -464,7 +464,11 @@ def my_game_first_step(width: int, height: int, st: float, at: float) -> pygame.
 
 
 def game_event(ev: EventType, x: int, y: int, st: float):
+    if ev.type == pygame.MOUSEBUTTONUP:
+        sh.all.update(ev, x, y, st)
+
     if ev.type == CHECK_CONNECTIONS_EVENT:
+        print("check connections")
         visited = check_connections(sh.matrix, findSource(sh.matrix))
         myevent = pygame.event.Event(SEND_WATER_EVENT, visited=visited)
         pygame.event.post(myevent)

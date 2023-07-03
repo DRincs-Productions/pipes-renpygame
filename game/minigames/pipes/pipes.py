@@ -1,8 +1,9 @@
 from enum import Enum
 import random
-from typing import Union
+from typing import Callable, Union
 import pythonpackages.renpygame as pygame
 from pythonpackages.renpygame.event import EventType
+import renpy.exports as renpy
 
 CHECK_CONNECTIONS_EVENT = 423536456
 SEND_WATER_EVENT = 365685678
@@ -54,10 +55,6 @@ class Way(pygame.sprite.Sprite):
         self.image_water = image_water
 
         pygame.sprite.Sprite.__init__(self, containers)
-        self.rect = self.image.get_rect()
-        x_rectangle, y_rectangle = self.rect.get_size()
-        self.rect.left = position[0] * (x_rectangle + game_margin)
-        self.rect.top = position[1] * (y_rectangle + game_margin)
 
         self._up = up
         self._down = down
@@ -69,6 +66,8 @@ class Way(pygame.sprite.Sprite):
         self.rotate_position = rotate
         self.have_water = False
 
+        self.create_rect()
+
     def update(self, ev: EventType, x: int, y: int, st: float):
         if ev.type == pygame.MOUSEBUTTONUP:
             if self.rect.collidepoint((x, y)):
@@ -76,11 +75,11 @@ class Way(pygame.sprite.Sprite):
                 myevent = pygame.event.Event(CHECK_CONNECTIONS_EVENT)
                 pygame.event.post(myevent)
         elif ev.type == SEND_WATER_EVENT:
-            if ev.visited[self.position[0]][self.position[1]]:
+            if ev.visited[self.position[1]][self.position[0]]:
                 self.have_water = True
             else:
                 self.have_water = False
-            self.image = self.image_water if self.have_water else self.image
+            self.create_rect()
 
     @property
     def up(self):
@@ -133,6 +132,15 @@ class Way(pygame.sprite.Sprite):
             self.rotate_position = RotatedEnum.ONE_EIGHTY
         elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             self.rotate_position = RotatedEnum.TWO_SEVENTY
+
+    def create_rect(self):
+        if self.have_water:
+            self.rect = self.image.get_rect()
+        else:
+            self.rect = self.image_water.get_rect()
+        x_rectangle, y_rectangle = self.rect.get_size()
+        self.rect.left = self.position[0] * (x_rectangle + game_margin)
+        self.rect.top = self.position[1] * (y_rectangle + game_margin)
 
 
 class FourWay(Way):
@@ -429,6 +437,7 @@ def main(size: tuple[int, int], margin=0):
     displayable_with_logic = pygame.RenpyGameByEvent(
         render_lambda=my_game_first_step,
         event_lambda=game_event,
+        redraw_lambda=redraw,
     )
     # show and start the game
     displayable_with_logic.show()
@@ -454,13 +463,25 @@ def my_game_first_step(width: int, height: int, st: float, at: float) -> pygame.
     return screen
 
 
-def game_event(ev: EventType, x: int, y: int, st: float):
+def game_event(ev: EventType, x: int, y: int, st: float, redraw: Callable[[int], None]):
     if ev.type == pygame.MOUSEBUTTONUP:
         sh.all.update(ev, x, y, st)
 
     if ev.type == CHECK_CONNECTIONS_EVENT:
         visited = check_connections(sh.matrix, findSource(sh.matrix))
-        print(visited)
         myevent = pygame.event.Event(SEND_WATER_EVENT, visited=visited)
         pygame.event.post(myevent)
+
+    if ev.type == SEND_WATER_EVENT:
+        sh.all.update(ev, x, y, st)
+        redraw(0)
     return
+
+
+def redraw(
+    cur_screen: pygame.Surface,
+    st: float,
+):
+    # draw the scene
+    dirty = sh.all.draw(cur_screen)
+    pygame.display.update(dirty)

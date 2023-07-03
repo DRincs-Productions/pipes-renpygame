@@ -277,36 +277,72 @@ class SharedData:
 
 first_puzzle = [
     [
-        OneWay(containers, st, at),
-        TwoWay(containers, st, at),
-        ThreeWay(containers, st, at),
-        FourWay(containers, st, at),
+        PuzzleEnum.OneWay,
+        PuzzleEnum.ThreeWay,
+        PuzzleEnum.FourWay,
+        PuzzleEnum.ThreeWay,
     ],
     [
-        OneWay(containers, st, at),
-        TwoWay(containers, st, at),
-        ThreeWay(containers, st, at),
-        FourWay(containers, st, at),
+        PuzzleEnum.FourWay,
+        PuzzleEnum.TwoWay,
+        PuzzleEnum.OneWay,
+        PuzzleEnum.FourWay,
     ],
     [
-        OneWay(containers, st, at),
-        TwoWay(containers, st, at),
-        ThreeWay(containers, st, at),
-        FourWay(containers, st, at),
+        PuzzleEnum.TwoWaySource,
+        PuzzleEnum.FourWaySource,
+        PuzzleEnum.FourWaySource,
+        PuzzleEnum.ThreeWaySource,
     ],
     [
-        OneWay(containers, st, at),
-        TwoWay(containers, st, at),
-        ThreeWay(containers, st, at),
-        FourWay(containers, st, at),
+        PuzzleEnum.FourWay,
+        PuzzleEnum.OneWay,
+        PuzzleEnum.OneWaySource,
+        PuzzleEnum.FourWay,
     ],
     [
-        OneWay(containers, st, at),
-        TwoWay(containers, st, at),
-        ThreeWay(containers, st, at),
-        FourWay(containers, st, at),
+        PuzzleEnum.ThreeWay,
+        PuzzleEnum.FourWaySource,
+        PuzzleEnum.OneWaySource,
+        PuzzleEnum.ThreeWaySource,
     ],
 ]
+
+
+def convert_puzzle(
+    puzzle: list[list[PuzzleEnum]],
+    containers: list[
+        Union[
+            pygame.sprite.AbstractGroup,
+            pygame.sprite.Group,
+            pygame.sprite.RenderUpdates,
+            pygame.sprite.GroupSingle,
+        ]
+    ],
+    st: float,
+    at: float,
+) -> list[list[Way]]:
+    res: list[list[Way]] = []
+    for i in range(len(puzzle)):
+        res.append([])
+        for j in range(len(puzzle[i])):
+            if puzzle[i][j] == PuzzleEnum.OneWay:
+                res[i].append(OneWay(containers, st, at))
+            elif puzzle[i][j] == PuzzleEnum.OneWaySource:
+                res[i].append(OneWay(containers, st, at, True))
+            elif puzzle[i][j] == PuzzleEnum.TwoWay:
+                res[i].append(TwoWay(containers, st, at))
+            elif puzzle[i][j] == PuzzleEnum.TwoWaySource:
+                res[i].append(TwoWay(containers, st, at, True))
+            elif puzzle[i][j] == PuzzleEnum.ThreeWay:
+                res[i].append(ThreeWay(containers, st, at))
+            elif puzzle[i][j] == PuzzleEnum.ThreeWaySource:
+                res[i].append(ThreeWay(containers, st, at, True))
+            elif puzzle[i][j] == PuzzleEnum.FourWay:
+                res[i].append(FourWay(containers, st, at))
+            elif puzzle[i][j] == PuzzleEnum.FourWaySource:
+                res[i].append(FourWay(containers, st, at, True))
+    return res
 
 
 def findSource(matrix: list[list[Way]]) -> list[tuple[int, int]]:

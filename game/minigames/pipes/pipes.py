@@ -5,6 +5,8 @@ import pythonpackages.renpygame as pygame
 from pythonpackages.renpygame.event import EventType
 import renpy.exports as renpy
 
+from pythonpackages.renpygame.image import Image
+
 CHECK_CONNECTIONS_EVENT = 423536456
 SEND_WATER_EVENT = 365685678
 game_screen_size: tuple[int, int] = (0, 0)
@@ -47,6 +49,8 @@ class Way(pygame.sprite.Sprite):
         right: bool,
         left: bool,
         position: tuple[int, int],
+        st: float,
+        at: float,
         is_source: bool = False,
         is_receiver: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
@@ -66,7 +70,7 @@ class Way(pygame.sprite.Sprite):
         self.rotate_position = rotate
         self.have_water = False
 
-        self.update_image()
+        self.update_image(st, at)
 
     def update(self, ev: EventType, x: int, y: int, st: float):
         if ev.type == pygame.MOUSEBUTTONUP:
@@ -79,7 +83,7 @@ class Way(pygame.sprite.Sprite):
                 self.have_water = True
             else:
                 self.have_water = False
-            self.update_image()
+            # self.update_image()
 
     @property
     def up(self):
@@ -133,7 +137,7 @@ class Way(pygame.sprite.Sprite):
         elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             self.rotate_position = RotatedEnum.TWO_SEVENTY
 
-    def update_image(self):
+    def update_image(self, st: float, at: float):
         if self.have_water:
             self.rect = self.image.get_rect()
         else:
@@ -179,6 +183,8 @@ class FourWay(Way):
             True,
             True,
             position,
+            st,
+            at,
             is_source,
             False,
             rotate,
@@ -221,6 +227,8 @@ class ThreeWay(Way):
             True,
             False,
             position,
+            st,
+            at,
             is_source,
             False,
             rotate,
@@ -261,6 +269,8 @@ class TwoWay(Way):
             False,
             False,
             position,
+            st,
+            at,
             is_source,
             False,
             rotate,
@@ -301,6 +311,8 @@ class OneWay(Way):
             False,
             False,
             position,
+            st,
+            at,
             is_source,
             not is_source,
             rotate,

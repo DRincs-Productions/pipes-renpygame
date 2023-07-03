@@ -299,7 +299,8 @@ class OneWay(Way):
 
 class SharedData:
     def __init__(self):
-        self.all = None
+        self.all = pygame.sprite.RenderUpdates()
+        self.matrix: list[list[Way]] = []
 
 
 first_puzzle = [
@@ -449,6 +450,12 @@ def main(size: tuple[int, int], margin=0):
 def my_game_first_step(width: int, height: int, st: float, at: float) -> pygame.Surface:
     bestdepth = pygame.display.mode_ok((0, 0), 0, 32)
     screen = pygame.display.set_mode((0, 0), 0, bestdepth)
+
+    sh.matrix = convert_puzzle(first_puzzle, [sh.all], st, at)
+
+    # draw the scene
+    dirty = sh.all.draw(screen)
+    pygame.display.update(dirty)
 
     return screen
 

@@ -298,8 +298,10 @@ class OneWay(Way):
             image = pygame.image.load("One_Way_Source_Node.webp").convert(st, at)
             image_water = image
         else:
-            image = pygame.image.load("Receiver_Node_With_Water.webp").convert(st, at)
-            image_water = pygame.image.load("Receiver_Node_Without_Water.webp").convert(
+            image = pygame.image.load("Receiver_Node_Without_Water.webp").convert(
+                st, at
+            )
+            image_water = pygame.image.load("Receiver_Node_With_Water.webp").convert(
                 st, at
             )
         super().__init__(

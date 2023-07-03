@@ -83,7 +83,8 @@ class Way(pygame.sprite.Sprite):
                 self.have_water = True
             else:
                 self.have_water = False
-            # self.update_image()
+            self.update_image(0, 0)
+        super().update()
 
     @property
     def up(self):

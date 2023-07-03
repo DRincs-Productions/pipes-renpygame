@@ -1,4 +1,5 @@
 from enum import Enum
+import random
 from typing import Union
 import pythonpackages.renpygame as pygame
 from pythonpackages.renpygame.event import EventType
@@ -326,22 +327,30 @@ def convert_puzzle(
     for i in range(len(puzzle)):
         res.append([])
         for j in range(len(puzzle[i])):
+            rotate = random.choice(
+                [
+                    RotatedEnum.ZERO,
+                    RotatedEnum.NINETY,
+                    RotatedEnum.TWO_SEVENTY,
+                    RotatedEnum.ONE_EIGHTY,
+                ]
+            )
             if puzzle[i][j] == PuzzleEnum.OneWay:
-                res[i].append(OneWay(containers, st, at))
+                res[i].append(OneWay(containers, st, at, False, rotate))
             elif puzzle[i][j] == PuzzleEnum.OneWaySource:
-                res[i].append(OneWay(containers, st, at, True))
+                res[i].append(OneWay(containers, st, at, True, rotate))
             elif puzzle[i][j] == PuzzleEnum.TwoWay:
-                res[i].append(TwoWay(containers, st, at))
+                res[i].append(TwoWay(containers, st, at, False, rotate))
             elif puzzle[i][j] == PuzzleEnum.TwoWaySource:
-                res[i].append(TwoWay(containers, st, at, True))
+                res[i].append(TwoWay(containers, st, at, True, rotate))
             elif puzzle[i][j] == PuzzleEnum.ThreeWay:
-                res[i].append(ThreeWay(containers, st, at))
+                res[i].append(ThreeWay(containers, st, at, False, rotate))
             elif puzzle[i][j] == PuzzleEnum.ThreeWaySource:
-                res[i].append(ThreeWay(containers, st, at, True))
+                res[i].append(ThreeWay(containers, st, at, True, rotate))
             elif puzzle[i][j] == PuzzleEnum.FourWay:
-                res[i].append(FourWay(containers, st, at))
+                res[i].append(FourWay(containers, st, at, False, rotate))
             elif puzzle[i][j] == PuzzleEnum.FourWaySource:
-                res[i].append(FourWay(containers, st, at, True))
+                res[i].append(FourWay(containers, st, at, True, rotate))
     return res
 
 

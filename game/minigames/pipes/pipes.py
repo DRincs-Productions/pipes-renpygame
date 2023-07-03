@@ -72,9 +72,9 @@ class Way(pygame.sprite.Sprite):
     def update(self, ev: EventType, x: int, y: int, st: float):
         if ev.type == pygame.MOUSEBUTTONUP:
             if self.rect.collidepoint((x, y)):
-                print("clicked on", self.position)
                 self.rotate()
-                pygame.time.set_timer(CHECK_CONNECTIONS_EVENT, 0)
+                myevent = pygame.event.Event(CHECK_CONNECTIONS_EVENT)
+                pygame.event.post(myevent)
         elif ev.type == SEND_WATER_EVENT:
             if ev.visited[self.position[0]][self.position[1]]:
                 self.have_water = True
@@ -324,18 +324,6 @@ first_puzzle = [
         PuzzleEnum.FourWaySource,
         PuzzleEnum.ThreeWaySource,
     ],
-    [
-        PuzzleEnum.FourWay,
-        PuzzleEnum.OneWay,
-        PuzzleEnum.OneWaySource,
-        PuzzleEnum.FourWay,
-    ],
-    [
-        PuzzleEnum.ThreeWay,
-        PuzzleEnum.FourWaySource,
-        PuzzleEnum.OneWaySource,
-        PuzzleEnum.ThreeWaySource,
-    ],
 ]
 
 
@@ -356,7 +344,6 @@ def convert_puzzle(
     for y in range(len(puzzle)):
         res.append([])
         for x in range(len(puzzle[y])):
-            print(y, x)
             rotate = random.choice(
                 [
                     RotatedEnum.ZERO,
@@ -386,10 +373,10 @@ def convert_puzzle(
 
 def findSource(matrix: list[list[Way]]) -> list[tuple[int, int]]:
     sources = []
-    for i in range(len(matrix)):
-        for j in range(len(matrix[i])):
-            if matrix[i][j].is_source:
-                sources.append((i, j))
+    for y in range(len(matrix)):
+        for x in range(len(matrix[y])):
+            if matrix[y][x].is_source:
+                sources.append((y, x))
     return sources
 
 
@@ -404,20 +391,24 @@ def check_connections(
 
 
 def check_connections_helper(
-    matrix: list[list[Way]], i: int, j: int, visited: list[list[bool]]
+    matrix: list[list[Way]], x: int, y: int, visited: list[list[bool]]
 ) -> None:
-    if matrix[i][j].up and not visited[i - 1][j]:
-        visited[i - 1][j] = True
-        check_connections_helper(matrix, i - 1, j, visited)
-    if matrix[i][j].down and not visited[i + 1][j]:
-        visited[i + 1][j] = True
-        check_connections_helper(matrix, i + 1, j, visited)
-    if matrix[i][j].left and not visited[i][j - 1]:
-        visited[i][j - 1] = True
-        check_connections_helper(matrix, i, j - 1, visited)
-    if matrix[i][j].right and not visited[i][j + 1]:
-        visited[i][j + 1] = True
-        check_connections_helper(matrix, i, j + 1, visited)
+    matrix_min = 0
+    matrix_max_x = len(matrix) - 1
+    matrix_max_y = len(matrix[0]) - 1
+
+    if x - 1 >= matrix_min and matrix[x][y].up and not visited[x - 1][y]:
+        visited[x - 1][y] = True
+        check_connections_helper(matrix, x - 1, y, visited)
+    if x + 1 <= matrix_max_x and matrix[x][y].down and not visited[x + 1][y]:
+        visited[x + 1][y] = True
+        check_connections_helper(matrix, x + 1, y, visited)
+    if y - 1 >= matrix_min and matrix[x][y].left and not visited[x][y - 1]:
+        visited[x][y - 1] = True
+        check_connections_helper(matrix, x, y - 1, visited)
+    if y + 1 <= matrix_max_y and matrix[x][y].right and not visited[x][y + 1]:
+        visited[x][y + 1] = True
+        check_connections_helper(matrix, x, y + 1, visited)
 
 
 sh = SharedData()
@@ -468,8 +459,8 @@ def game_event(ev: EventType, x: int, y: int, st: float):
         sh.all.update(ev, x, y, st)
 
     if ev.type == CHECK_CONNECTIONS_EVENT:
-        print("check connections")
         visited = check_connections(sh.matrix, findSource(sh.matrix))
+        print(visited)
         myevent = pygame.event.Event(SEND_WATER_EVENT, visited=visited)
         pygame.event.post(myevent)
     return

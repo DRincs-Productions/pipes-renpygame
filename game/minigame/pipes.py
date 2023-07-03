@@ -4,6 +4,8 @@ from typing import Union
 import pythonpackages.renpygame as pygame
 from pythonpackages.renpygame.event import EventType
 
+CHECK_CONNECTIONS_EVENT = 423536456
+SEND_WATER_EVENT = 365685678
 game_screen_size: tuple[int, int] = (0, 0)
 game_margin = 0
 
@@ -43,6 +45,7 @@ class Way(pygame.sprite.Sprite):
         down: bool,
         right: bool,
         left: bool,
+        position: tuple[int, int],
         is_source: bool = False,
         is_receiver: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
@@ -57,62 +60,77 @@ class Way(pygame.sprite.Sprite):
         self._down = down
         self._right = right
         self._left = left
+        self.position = position
         self.is_source = is_source
         self.is_receiver = is_receiver
-        self.position = rotate
+        self.rotate_position = rotate
         self.have_water = False
+
+    def update(self, events):
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONUP:
+                if self.rect.collidepoint(event.pos):
+                    self.rotate()
+                    myevent = pygame.event.Event(CHECK_CONNECTIONS_EVENT)
+                    pygame.event.post(myevent)
+            elif event.type == SEND_WATER_EVENT:
+                if event.visited[self.position[0]][self.position[1]]:
+                    self.have_water = True
+                else:
+                    self.have_water = False
+                self.image = self.image_water if self.have_water else self.image
 
     @property
     def up(self):
-        if self.position == RotatedEnum.ZERO:
+        if self.rotate_position == RotatedEnum.ZERO:
             return self._up
-        elif self.position == RotatedEnum.NINETY:
+        elif self.rotate_position == RotatedEnum.NINETY:
             return self._right
-        elif self.position == RotatedEnum.ONE_EIGHTY:
+        elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             return self._down
-        elif self.position == RotatedEnum.TWO_SEVENTY:
+        elif self.rotate_position == RotatedEnum.TWO_SEVENTY:
             return self._left
 
     @property
     def down(self):
-        if self.position == RotatedEnum.ZERO:
+        if self.rotate_position == RotatedEnum.ZERO:
             return self._down
-        elif self.position == RotatedEnum.NINETY:
+        elif self.rotate_position == RotatedEnum.NINETY:
             return self._left
-        elif self.position == RotatedEnum.ONE_EIGHTY:
+        elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             return self._up
-        elif self.position == RotatedEnum.TWO_SEVENTY:
+        elif self.rotate_position == RotatedEnum.TWO_SEVENTY:
             return self._right
 
     @property
     def right(self):
-        if self.position == RotatedEnum.ZERO:
+        if self.rotate_position == RotatedEnum.ZERO:
             return self._right
-        elif self.position == RotatedEnum.NINETY:
+        elif self.rotate_position == RotatedEnum.NINETY:
             return self._down
-        elif self.position == RotatedEnum.ONE_EIGHTY:
+        elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             return self._left
-        elif self.position == RotatedEnum.TWO_SEVENTY:
+        elif self.rotate_position == RotatedEnum.TWO_SEVENTY:
             return self._up
 
     @property
     def left(self):
-        if self.position == RotatedEnum.ZERO:
+        if self.rotate_position == RotatedEnum.ZERO:
             return self._left
-        elif self.position == RotatedEnum.NINETY:
+        elif self.rotate_position == RotatedEnum.NINETY:
             return self._up
-        elif self.position == RotatedEnum.ONE_EIGHTY:
+        elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             return self._right
-        elif self.position == RotatedEnum.TWO_SEVENTY:
+        elif self.rotate_position == RotatedEnum.TWO_SEVENTY:
             return self._down
 
     def rotate(self):
-        if self.position == RotatedEnum.ZERO:
-            self.position = RotatedEnum.NINETY
-        elif self.position == RotatedEnum.NINETY:
-            self.position = RotatedEnum.ONE_EIGHTY
-        elif self.position == RotatedEnum.ONE_EIGHTY:
-            self.position = RotatedEnum.TWO_SEVENTY
+        if self.rotate_position == RotatedEnum.ZERO:
+            self.rotate_position = RotatedEnum.NINETY
+        elif self.rotate_position == RotatedEnum.NINETY:
+            self.rotate_position = RotatedEnum.ONE_EIGHTY
+        elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
+            self.rotate_position = RotatedEnum.TWO_SEVENTY
 
 
 class FourWay(Way):
@@ -126,6 +144,7 @@ class FourWay(Way):
                 pygame.sprite.GroupSingle,
             ]
         ],
+        position: tuple[int, int],
         st: float,
         at: float,
         is_source: bool = False,
@@ -149,6 +168,7 @@ class FourWay(Way):
             True,
             True,
             True,
+            position,
             is_source,
             False,
             rotate,
@@ -166,6 +186,7 @@ class ThreeWay(Way):
                 pygame.sprite.GroupSingle,
             ]
         ],
+        position: tuple[int, int],
         st: float,
         at: float,
         is_source: bool = False,
@@ -189,6 +210,7 @@ class ThreeWay(Way):
             True,
             True,
             False,
+            position,
             is_source,
             False,
             rotate,
@@ -206,6 +228,7 @@ class TwoWay(Way):
                 pygame.sprite.GroupSingle,
             ]
         ],
+        position: tuple[int, int],
         st: float,
         at: float,
         is_source: bool = False,
@@ -227,6 +250,7 @@ class TwoWay(Way):
             True,
             False,
             False,
+            position,
             is_source,
             False,
             rotate,
@@ -244,6 +268,7 @@ class OneWay(Way):
                 pygame.sprite.GroupSingle,
             ]
         ],
+        position: tuple[int, int],
         st: float,
         at: float,
         is_source: bool = False,
@@ -265,6 +290,7 @@ class OneWay(Way):
             False,
             False,
             False,
+            position,
             is_source,
             not is_source,
             rotate,
@@ -324,9 +350,9 @@ def convert_puzzle(
     at: float,
 ) -> list[list[Way]]:
     res: list[list[Way]] = []
-    for i in range(len(puzzle)):
+    for y in range(len(puzzle)):
         res.append([])
-        for j in range(len(puzzle[i])):
+        for x in range(len(puzzle[y])):
             rotate = random.choice(
                 [
                     RotatedEnum.ZERO,
@@ -335,22 +361,22 @@ def convert_puzzle(
                     RotatedEnum.ONE_EIGHTY,
                 ]
             )
-            if puzzle[i][j] == PuzzleEnum.OneWay:
-                res[i].append(OneWay(containers, st, at, False, rotate))
-            elif puzzle[i][j] == PuzzleEnum.OneWaySource:
-                res[i].append(OneWay(containers, st, at, True, rotate))
-            elif puzzle[i][j] == PuzzleEnum.TwoWay:
-                res[i].append(TwoWay(containers, st, at, False, rotate))
-            elif puzzle[i][j] == PuzzleEnum.TwoWaySource:
-                res[i].append(TwoWay(containers, st, at, True, rotate))
-            elif puzzle[i][j] == PuzzleEnum.ThreeWay:
-                res[i].append(ThreeWay(containers, st, at, False, rotate))
-            elif puzzle[i][j] == PuzzleEnum.ThreeWaySource:
-                res[i].append(ThreeWay(containers, st, at, True, rotate))
-            elif puzzle[i][j] == PuzzleEnum.FourWay:
-                res[i].append(FourWay(containers, st, at, False, rotate))
-            elif puzzle[i][j] == PuzzleEnum.FourWaySource:
-                res[i].append(FourWay(containers, st, at, True, rotate))
+            if puzzle[y][x] == PuzzleEnum.OneWay:
+                res[y].append(OneWay(containers, (x, y), st, at, False, rotate))
+            elif puzzle[y][x] == PuzzleEnum.OneWaySource:
+                res[y].append(OneWay(containers, (x, y), st, at, True, rotate))
+            elif puzzle[y][x] == PuzzleEnum.TwoWay:
+                res[y].append(TwoWay(containers, (x, y), st, at, False, rotate))
+            elif puzzle[y][x] == PuzzleEnum.TwoWaySource:
+                res[y].append(TwoWay(containers, (x, y), st, at, True, rotate))
+            elif puzzle[y][x] == PuzzleEnum.ThreeWay:
+                res[y].append(ThreeWay(containers, (x, y), st, at, False, rotate))
+            elif puzzle[y][x] == PuzzleEnum.ThreeWaySource:
+                res[y].append(ThreeWay(containers, (x, y), st, at, True, rotate))
+            elif puzzle[y][x] == PuzzleEnum.FourWay:
+                res[y].append(FourWay(containers, (x, y), st, at, False, rotate))
+            elif puzzle[y][x] == PuzzleEnum.FourWaySource:
+                res[y].append(FourWay(containers, (x, y), st, at, True, rotate))
     return res
 
 
@@ -425,5 +451,8 @@ def my_game_first_step(width: int, height: int, st: float, at: float) -> pygame.
 
 
 def game_event(ev: EventType, x: int, y: int, st: float):
-    # TODO https://stackoverflow.com/questions/10990137/pygame-mouse-clicking-detection
+    if ev.type == CHECK_CONNECTIONS_EVENT:
+        visited = check_connections(sh.matrix, findSource(sh.matrix))
+        myevent = pygame.event.Event(SEND_WATER_EVENT, visited=visited)
+        pygame.event.post(myevent)
     return

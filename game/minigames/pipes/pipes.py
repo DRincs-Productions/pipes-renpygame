@@ -416,6 +416,9 @@ def check_connections_helper(
         check_connections_helper(matrix, i, j + 1, visited)
 
 
+sh = SharedData()
+
+
 def main(size: tuple[int, int], margin=0):
     global game_screen_size
     game_screen_size = size

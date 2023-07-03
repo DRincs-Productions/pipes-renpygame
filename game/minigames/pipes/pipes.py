@@ -55,6 +55,9 @@ class Way(pygame.sprite.Sprite):
 
         pygame.sprite.Sprite.__init__(self, containers)
         self.rect = self.image.get_rect()
+        x_rectangle, y_rectangle = self.rect.get_size()
+        self.rect.left = position[0] * (x_rectangle + game_margin)
+        self.rect.top = position[1] * (y_rectangle + game_margin)
 
         self._up = up
         self._down = down

@@ -66,7 +66,7 @@ class Way(pygame.sprite.Sprite):
         self.rotate_position = rotate
         self.have_water = False
 
-        self.create_rect()
+        self.update_image()
 
     def update(self, ev: EventType, x: int, y: int, st: float):
         if ev.type == pygame.MOUSEBUTTONUP:
@@ -79,7 +79,7 @@ class Way(pygame.sprite.Sprite):
                 self.have_water = True
             else:
                 self.have_water = False
-            self.create_rect()
+            self.update_image()
 
     @property
     def up(self):
@@ -133,7 +133,7 @@ class Way(pygame.sprite.Sprite):
         elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             self.rotate_position = RotatedEnum.TWO_SEVENTY
 
-    def create_rect(self):
+    def update_image(self):
         if self.have_water:
             self.rect = self.image.get_rect()
         else:
@@ -481,6 +481,7 @@ def game_event(ev: EventType, x: int, y: int, st: float, redraw: Callable[[int],
 def redraw(
     cur_screen: pygame.Surface,
     st: float,
+    at: float,
 ):
     # draw the scene
     dirty = sh.all.draw(cur_screen)

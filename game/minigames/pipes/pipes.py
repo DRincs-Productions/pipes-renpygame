@@ -1,6 +1,6 @@
 from enum import Enum
 import random
-from typing import Callable, Union
+from typing import Callable, Optional, Union
 import pythonpackages.renpygame as pygame
 from pythonpackages.renpygame.event import EventType
 import renpy.exports as renpy
@@ -9,6 +9,7 @@ from pythonpackages.renpygame.image import Image
 
 CHECK_CONNECTIONS_EVENT = 423536456
 SEND_WATER_EVENT = 365685678
+UPDATE_IMAGE = 893457893457
 game_screen_size: tuple[int, int] = (0, 0)
 game_margin = 0
 
@@ -34,8 +35,8 @@ class PuzzleEnum(Enum):
 class Way(pygame.sprite.Sprite):
     def __init__(
         self,
-        image: pygame.Surface,
-        image_water: pygame.Surface,
+        image_without_water: Image,
+        image_water: Image,
         containers: list[
             Union[
                 pygame.sprite.AbstractGroup,
@@ -55,7 +56,7 @@ class Way(pygame.sprite.Sprite):
         is_receiver: bool = False,
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
-        self.image = image
+        self.image_without_water = image_without_water
         self.image_water = image_water
 
         pygame.sprite.Sprite.__init__(self, containers)
@@ -71,20 +72,6 @@ class Way(pygame.sprite.Sprite):
         self.have_water = False
 
         self.update_image(st, at)
-
-    def update(self, ev: EventType, x: int, y: int, st: float):
-        if ev.type == pygame.MOUSEBUTTONUP:
-            if self.rect.collidepoint((x, y)):
-                self.rotate()
-                myevent = pygame.event.Event(CHECK_CONNECTIONS_EVENT)
-                pygame.event.post(myevent)
-        elif ev.type == SEND_WATER_EVENT:
-            if ev.visited[self.position[1]][self.position[0]]:
-                self.have_water = True
-            else:
-                self.have_water = False
-            self.update_image(0, 0)
-        super().update()
 
     @property
     def up(self):
@@ -131,6 +118,8 @@ class Way(pygame.sprite.Sprite):
             return self._down
 
     def rotate(self):
+        if self.is_receiver:
+            return
         if self.rotate_position == RotatedEnum.ZERO:
             self.rotate_position = RotatedEnum.NINETY
         elif self.rotate_position == RotatedEnum.NINETY:
@@ -138,12 +127,34 @@ class Way(pygame.sprite.Sprite):
         elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             self.rotate_position = RotatedEnum.TWO_SEVENTY
 
+    def update(
+        self, ev: EventType, x: int, y: int, st: Optional[float], at: Optional[float]
+    ):
+        if ev.type == pygame.MOUSEBUTTONUP:
+            if self.rect.collidepoint((x, y)):
+                self.rotate()
+                myevent = pygame.event.Event(CHECK_CONNECTIONS_EVENT)
+                pygame.event.post(myevent)
+        elif ev.type == SEND_WATER_EVENT:
+            if ev.visited[self.position[1]][self.position[0]]:
+                self.have_water = True
+            else:
+                self.have_water = False
+        elif ev.type == UPDATE_IMAGE:
+            if st is not None and at is not None:
+                self.update_image(st, at)
+            else:
+                print("ERROR: st or at is None")
+        super().update()
+
     def update_image(self, st: float, at: float):
-        print(self.position, self.have_water)
+        # * INFO: self.image is a special variable in pygame.sprite.Sprite
         if self.have_water:
-            self.rect = self.image.get_rect()
+            self.image = self.image_water.convert(st, at)
         else:
-            self.rect = self.image_water.get_rect()
+            self.image = self.image_without_water.convert(st, at)
+
+        self.rect = self.image.get_rect()
         x_rectangle, y_rectangle = self.rect.get_size()
         self.rect.left = self.position[0] * (x_rectangle + game_margin)
         self.rect.top = self.position[1] * (y_rectangle + game_margin)
@@ -167,15 +178,11 @@ class FourWay(Way):
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
         if is_source:
-            image = pygame.image.load("Four_Way_Source_Node.webp").convert(st, at)
+            image = pygame.image.load("Four_Way_Source_Node.webp")
             image_water = image
         else:
-            image = pygame.image.load("Four_Way_Tube_Without_Water.webp").convert(
-                st, at
-            )
-            image_water = pygame.image.load("Four_Way_Tube_With_Water.webp").convert(
-                st, at
-            )
+            image = pygame.image.load("Four_Way_Tube_Without_Water.webp")
+            image_water = pygame.image.load("Four_Way_Tube_With_Water.webp")
         super().__init__(
             image,
             image_water,
@@ -211,15 +218,11 @@ class ThreeWay(Way):
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
         if is_source:
-            image = pygame.image.load("Three_Way_Source_Node.webp").convert(st, at)
+            image = pygame.image.load("Three_Way_Source_Node.webp")
             image_water = image
         else:
-            image = pygame.image.load("Three_Way_Tube_Without_Water.webp").convert(
-                st, at
-            )
-            image_water = pygame.image.load("Three_Way_Tube_With_Water.webp").convert(
-                st, at
-            )
+            image = pygame.image.load("Three_Way_Tube_Without_Water.webp")
+            image_water = pygame.image.load("Three_Way_Tube_With_Water.webp")
         super().__init__(
             image,
             image_water,
@@ -255,13 +258,11 @@ class TwoWay(Way):
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
         if is_source:
-            image = pygame.image.load("Two_Way_Source_Node.webp").convert(st, at)
+            image = pygame.image.load("Two_Way_Source_Node.webp")
             image_water = image
         else:
-            image = pygame.image.load("Two_Way_Tube_Without_Water.webp").convert(st, at)
-            image_water = pygame.image.load("Two_Way_Tube_With_Water.webp").convert(
-                st, at
-            )
+            image = pygame.image.load("Two_Way_Tube_Without_Water.webp")
+            image_water = pygame.image.load("Two_Way_Tube_With_Water.webp")
         super().__init__(
             image,
             image_water,
@@ -297,15 +298,11 @@ class OneWay(Way):
         rotate: RotatedEnum = RotatedEnum.ZERO,
     ):
         if is_source:
-            image = pygame.image.load("One_Way_Source_Node.webp").convert(st, at)
+            image = pygame.image.load("One_Way_Source_Node.webp")
             image_water = image
         else:
-            image = pygame.image.load("Receiver_Node_Without_Water.webp").convert(
-                st, at
-            )
-            image_water = pygame.image.load("Receiver_Node_With_Water.webp").convert(
-                st, at
-            )
+            image = pygame.image.load("Receiver_Node_Without_Water.webp")
+            image_water = pygame.image.load("Receiver_Node_With_Water.webp")
         super().__init__(
             image,
             image_water,
@@ -483,7 +480,7 @@ def my_game_first_step(width: int, height: int, st: float, at: float) -> pygame.
 
 def game_event(ev: EventType, x: int, y: int, st: float, redraw: Callable[[int], None]):
     if ev.type == pygame.MOUSEBUTTONUP:
-        sh.all.update(ev, x, y, st)
+        sh.all.update(ev, x, y, None, None)
 
     if ev.type == CHECK_CONNECTIONS_EVENT:
         visited = check_connections(sh.matrix, sh.source_list)
@@ -491,7 +488,7 @@ def game_event(ev: EventType, x: int, y: int, st: float, redraw: Callable[[int],
         pygame.event.post(myevent)
 
     if ev.type == SEND_WATER_EVENT:
-        sh.all.update(ev, x, y, st)
+        sh.all.update(ev, x, y, None, None)
         redraw(0)
     return
 
@@ -501,6 +498,8 @@ def redraw(
     st: float,
     at: float,
 ):
+    myevent = pygame.event.Event(UPDATE_IMAGE)
+    sh.all.update(myevent, 0, 0, st, at)
     # draw the scene
     dirty = sh.all.draw(cur_screen)
     pygame.display.update(dirty)

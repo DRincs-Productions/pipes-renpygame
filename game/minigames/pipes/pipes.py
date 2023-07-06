@@ -150,10 +150,18 @@ class Way(pygame.sprite.Sprite):
     def update_image(self, st: float, at: float):
         # * INFO: self.image is a special variable in pygame.sprite.Sprite
         if self.have_water:
-            self.image = self.image_water.convert(st, at)
+            pre_image = self.image_water
         else:
-            self.image = self.image_without_water.convert(st, at)
+            pre_image = self.image_without_water
 
+        if self.rotate_position == RotatedEnum.NINETY:
+            pygame.transform.rotate(pre_image, 90)
+        elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
+            pygame.transform.rotate(pre_image, 180)
+        elif self.rotate_position == RotatedEnum.TWO_SEVENTY:
+            pygame.transform.rotate(pre_image, 270)
+
+        self.image = pre_image.convert(st, at)
         self.rect = self.image.get_rect()
         x_rectangle, y_rectangle = self.rect.get_size()
         self.rect.left = self.position[0] * (x_rectangle + game_margin)
@@ -464,12 +472,20 @@ def main(size: tuple[int, int], margin=0):
     return
 
 
+def send_have_water_event():
+    visited = check_connections(sh.matrix, sh.source_list)
+    myevent = pygame.event.Event(SEND_WATER_EVENT, visited=visited)
+    pygame.event.post(myevent)
+
+
 def my_game_first_step(width: int, height: int, st: float, at: float) -> pygame.Surface:
     bestdepth = pygame.display.mode_ok((0, 0), 0, 32)
     screen = pygame.display.set_mode((0, 0), 0, bestdepth)
 
     sh.matrix = convert_puzzle(first_puzzle, [sh.all], st, at)
     sh.source_list = findSource(sh.matrix)
+
+    send_have_water_event()
 
     # draw the scene
     dirty = sh.all.draw(screen)
@@ -483,9 +499,7 @@ def game_event(ev: EventType, x: int, y: int, st: float, redraw: Callable[[int],
         sh.all.update(ev, x, y, None, None)
 
     if ev.type == CHECK_CONNECTIONS_EVENT:
-        visited = check_connections(sh.matrix, sh.source_list)
-        myevent = pygame.event.Event(SEND_WATER_EVENT, visited=visited)
-        pygame.event.post(myevent)
+        send_have_water_event()
 
     if ev.type == SEND_WATER_EVENT:
         sh.all.update(ev, x, y, None, None)

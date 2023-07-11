@@ -126,6 +126,8 @@ class Way(pygame.sprite.Sprite):
             self.rotate_position = RotatedEnum.ONE_EIGHTY
         elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             self.rotate_position = RotatedEnum.TWO_SEVENTY
+        elif self.rotate_position == RotatedEnum.TWO_SEVENTY:
+            self.rotate_position = RotatedEnum.ZERO
 
     def update(
         self, ev: EventType, x: int, y: int, st: Optional[float], at: Optional[float]

@@ -156,7 +156,9 @@ class Way(pygame.sprite.Sprite):
         else:
             pre_image = self.image_without_water
 
-        if self.rotate_position == RotatedEnum.NINETY:
+        if self.rotate_position == RotatedEnum.ZERO:
+            pre_image = pygame.transform.rotate(pre_image, 0)
+        elif self.rotate_position == RotatedEnum.NINETY:
             pre_image = pygame.transform.rotate(pre_image, 90)
         elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             pre_image = pygame.transform.rotate(pre_image, 180)

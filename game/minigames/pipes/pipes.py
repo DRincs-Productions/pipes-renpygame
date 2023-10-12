@@ -157,7 +157,7 @@ class Way(pygame.sprite.Sprite):
             pre_image = self.image_without_water
 
         if self.rotate_position == RotatedEnum.ZERO:
-            # I rotate the image for 1 degree because if I rotate it for 0
+            # * I rotate the image for 1 degree because if I rotate it for 0
             pre_image = pygame.transform.rotate(pre_image, 1)
         elif self.rotate_position == RotatedEnum.NINETY:
             pre_image = pygame.transform.rotate(pre_image, 90)
@@ -169,8 +169,9 @@ class Way(pygame.sprite.Sprite):
         self.image = pre_image.convert(st, at)
         self.rect = self.image.get_rect()
         x_rectangle, y_rectangle = self.rect.get_size()
-        self.rect.left = self.position[0] * (x_rectangle + game_margin)
-        self.rect.top = self.position[1] * (y_rectangle + game_margin)
+        # * I don't know why but when I rotate the image -> the x and y are changed, so need -70
+        self.rect.left = self.position[0] * (x_rectangle + game_margin) - 70
+        self.rect.top = self.position[1] * (y_rectangle + game_margin) - 70
 
 
 class FourWay(Way):

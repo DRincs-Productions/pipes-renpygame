@@ -178,8 +178,8 @@ class Way(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         x_rectangle, y_rectangle = self.rect.get_size()
         # * I don't know why but when I rotate the image -> the x and y are changed, so need -70
-        self.rect.left = self.position[0] * (x_rectangle + game_margin) - 70
-        self.rect.top = self.position[1] * (y_rectangle + game_margin) - 70
+        self.rect.left = self.x * (x_rectangle + game_margin) - 70
+        self.rect.top = self.y * (y_rectangle + game_margin) - 70
 
 
 class FourWay(Way):

@@ -117,6 +117,14 @@ class Way(pygame.sprite.Sprite):
         elif self.rotate_position == RotatedEnum.TWO_SEVENTY:
             return self._down
 
+    @property
+    def x(self):
+        return self.position[0]
+
+    @property
+    def y(self):
+        return self.position[1]
+
     def rotate(self):
         if self.is_receiver:
             return

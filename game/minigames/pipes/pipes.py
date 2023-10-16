@@ -22,8 +22,11 @@ class RotatedEnum(Enum):
 
 
 class PuzzleEnum(Enum):
-    OneWay = 10
+    OneWayZERO = 10
     OneWaySource = 11
+    OneWayNINETY = 12
+    OneWayONE_EIGHTY = 13
+    OneWayTWO_SEVENTY = 14
     TwoWay = 20
     TwoWaySource = 21
     ThreeWay = 30
@@ -351,7 +354,7 @@ class SharedData:
 
 first_puzzle = [
     [
-        PuzzleEnum.OneWay,
+        PuzzleEnum.OneWayONE_EIGHTY,
         PuzzleEnum.ThreeWay,
         PuzzleEnum.TwoWay,
         PuzzleEnum.ThreeWay,
@@ -359,14 +362,14 @@ first_puzzle = [
     [
         PuzzleEnum.TwoWay,
         PuzzleEnum.TwoWaySource,
-        PuzzleEnum.OneWay,
+        PuzzleEnum.TwoWay,
         PuzzleEnum.TwoWay,
     ],
     [
         PuzzleEnum.TwoWay,
         PuzzleEnum.TwoWay,
         PuzzleEnum.TwoWay,
-        PuzzleEnum.ThreeWaySource,
+        PuzzleEnum.OneWayZERO,
     ],
 ]
 
@@ -399,8 +402,20 @@ def convert_puzzle(
                     RotatedEnum.ONE_EIGHTY,
                 ]
             )
-            if puzzle[y][x] == PuzzleEnum.OneWay:
-                res[x][y] = OneWay(containers, (x, y), st, at, False, rotate)
+            if puzzle[y][x] == PuzzleEnum.OneWayZERO:
+                res[x][y] = OneWay(containers, (x, y), st, at, False, RotatedEnum.ZERO)
+            elif puzzle[y][x] == PuzzleEnum.OneWayNINETY:
+                res[x][y] = OneWay(
+                    containers, (x, y), st, at, False, RotatedEnum.NINETY
+                )
+            elif puzzle[y][x] == PuzzleEnum.OneWayTWO_SEVENTY:
+                res[x][y] = OneWay(
+                    containers, (x, y), st, at, False, RotatedEnum.TWO_SEVENTY
+                )
+            elif puzzle[y][x] == PuzzleEnum.OneWayONE_EIGHTY:
+                res[x][y] = OneWay(
+                    containers, (x, y), st, at, False, RotatedEnum.ONE_EIGHTY
+                )
             elif puzzle[y][x] == PuzzleEnum.OneWaySource:
                 res[x][y] = OneWay(containers, (x, y), st, at, True, rotate)
             elif puzzle[y][x] == PuzzleEnum.TwoWay:

@@ -198,19 +198,19 @@ class FourWay(Way):
             image = pygame.image.load("Four_Way_Tube_Without_Water.webp")
             image_water = pygame.image.load("Four_Way_Tube_With_Water.webp")
         super().__init__(
-            image,
-            image_water,
-            containers,
-            True,
-            True,
-            True,
-            True,
-            position,
-            st,
-            at,
-            is_source,
-            False,
-            rotate,
+            image_without_water=image,
+            image_water=image_water,
+            containers=containers,
+            up=True,
+            down=True,
+            right=True,
+            left=True,
+            position=position,
+            st=st,
+            at=at,
+            is_source=is_source,
+            is_receiver=False,
+            rotate=rotate,
         )
 
 
@@ -238,19 +238,19 @@ class ThreeWay(Way):
             image = pygame.image.load("Three_Way_Tube_Without_Water.webp")
             image_water = pygame.image.load("Three_Way_Tube_With_Water.webp")
         super().__init__(
-            image,
-            image_water,
-            containers,
-            True,
-            True,
-            True,
-            False,
-            position,
-            st,
-            at,
-            is_source,
-            False,
-            rotate,
+            image_without_water=image,
+            image_water=image_water,
+            containers=containers,
+            up=True,
+            down=True,
+            right=True,
+            left=False,
+            position=position,
+            st=st,
+            at=at,
+            is_source=is_source,
+            is_receiver=False,
+            rotate=rotate,
         )
 
 
@@ -278,19 +278,19 @@ class TwoWay(Way):
             image = pygame.image.load("Two_Way_Tube_Without_Water.webp")
             image_water = pygame.image.load("Two_Way_Tube_With_Water.webp")
         super().__init__(
-            image,
-            image_water,
-            containers,
-            True,
-            True,
-            False,
-            False,
-            position,
-            st,
-            at,
-            is_source,
-            False,
-            rotate,
+            image_without_water=image,
+            image_water=image_water,
+            containers=containers,
+            up=True,
+            down=False,
+            right=True,
+            left=False,
+            position=position,
+            st=st,
+            at=at,
+            is_source=is_source,
+            is_receiver=False,
+            rotate=rotate,
         )
 
 
@@ -318,19 +318,19 @@ class OneWay(Way):
             image = pygame.image.load("Receiver_Node_Without_Water.webp")
             image_water = pygame.image.load("Receiver_Node_With_Water.webp")
         super().__init__(
-            image,
-            image_water,
-            containers,
-            True,
-            False,
-            False,
-            False,
-            position,
-            st,
-            at,
-            is_source,
-            not is_source,
-            rotate,
+            image_without_water=image,
+            image_water=image_water,
+            containers=containers,
+            up=True,
+            down=False,
+            right=False,
+            left=False,
+            position=position,
+            st=st,
+            at=at,
+            is_source=is_source,
+            is_receiver=not is_source,
+            rotate=rotate,
         )
 
 

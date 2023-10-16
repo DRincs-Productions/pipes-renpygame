@@ -78,44 +78,44 @@ class Way(pygame.sprite.Sprite):
         if self.rotate_position == RotatedEnum.ZERO:
             return self._up
         elif self.rotate_position == RotatedEnum.NINETY:
-            return self._right
+            return self._left
         elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             return self._down
         elif self.rotate_position == RotatedEnum.TWO_SEVENTY:
-            return self._left
+            return self._right
 
     @property
     def down(self):
         if self.rotate_position == RotatedEnum.ZERO:
             return self._down
         elif self.rotate_position == RotatedEnum.NINETY:
-            return self._left
+            return self._right
         elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             return self._up
         elif self.rotate_position == RotatedEnum.TWO_SEVENTY:
-            return self._right
+            return self._left
 
     @property
     def right(self):
         if self.rotate_position == RotatedEnum.ZERO:
             return self._right
         elif self.rotate_position == RotatedEnum.NINETY:
-            return self._down
+            return self._up
         elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             return self._left
         elif self.rotate_position == RotatedEnum.TWO_SEVENTY:
-            return self._up
+            return self._down
 
     @property
     def left(self):
         if self.rotate_position == RotatedEnum.ZERO:
             return self._left
         elif self.rotate_position == RotatedEnum.NINETY:
-            return self._up
+            return self._down
         elif self.rotate_position == RotatedEnum.ONE_EIGHTY:
             return self._right
         elif self.rotate_position == RotatedEnum.TWO_SEVENTY:
-            return self._down
+            return self._up
 
     @property
     def x(self):
@@ -146,9 +146,6 @@ class Way(pygame.sprite.Sprite):
                 myevent = pygame.event.Event(CHECK_CONNECTIONS_EVENT)
                 pygame.event.post(myevent)
         elif ev.type == SEND_WATER_EVENT:
-            print(ev.visited)
-            print(self.x)
-            print(self.y)
             if ev.visited[self.x][self.y]:
                 self.have_water = True
             else:
@@ -361,7 +358,7 @@ first_puzzle = [
     ],
     [
         PuzzleEnum.TwoWay,
-        PuzzleEnum.TwoWay,
+        PuzzleEnum.TwoWaySource,
         PuzzleEnum.OneWay,
         PuzzleEnum.TwoWay,
     ],
@@ -450,42 +447,42 @@ def check_connections_helper(
     matrix: list[list[Way]], x: int, y: int, visited: list[list[bool]]
 ) -> None:
     matrix_min = 0
-    matrix_max_x = len(matrix[0]) - 1
-    matrix_max_y = len(matrix) - 1
+    matrix_max_x = len(matrix) - 1
+    matrix_max_y = len(matrix[0]) - 1
 
     # * matrix have a x y inverted
     if (
-        y - 1 >= matrix_min
-        and not visited[x][y - 1]
-        and matrix[x][y].left
-        and matrix[x][y - 1].right
-    ):
-        visited[x][y - 1] = True
-        check_connections_helper(matrix, x, y - 1, visited)
-    if (
-        y + 1 <= matrix_max_x
-        and not visited[x][y + 1]
-        and matrix[x][y].right
-        and matrix[x][y + 1].left
-    ):
-        visited[x][y + 1] = True
-        check_connections_helper(matrix, x, y + 1, visited)
-    if (
         x - 1 >= matrix_min
         and not visited[x - 1][y]
-        and matrix[x][y].down
-        and matrix[x - 1][y].up
+        and matrix[x][y].left
+        and matrix[x - 1][y].right
     ):
         visited[x - 1][y] = True
         check_connections_helper(matrix, x - 1, y, visited)
     if (
-        x + 1 <= matrix_max_y
+        x + 1 <= matrix_max_x
         and not visited[x + 1][y]
-        and matrix[x][y].up
-        and matrix[x + 1][y].down
+        and matrix[x][y].right
+        and matrix[x + 1][y].left
     ):
         visited[x + 1][y] = True
         check_connections_helper(matrix, x + 1, y, visited)
+    if (
+        y + 1 <= matrix_max_y
+        and not visited[x][y + 1]
+        and matrix[x][y].down
+        and matrix[x][y + 1].up
+    ):
+        visited[x][y + 1] = True
+        check_connections_helper(matrix, x, y + 1, visited)
+    if (
+        y - 1 >= matrix_min
+        and not visited[x][y - 1]
+        and matrix[x][y].up
+        and matrix[x][y - 1].down
+    ):
+        visited[x][y - 1] = True
+        check_connections_helper(matrix, x, y - 1, visited)
 
 
 sh = SharedData()

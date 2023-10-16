@@ -6,6 +6,7 @@ from pythonpackages.renpygame.event import EventType
 import renpy.exports as renpy
 
 from pythonpackages.renpygame.image import Image
+from pythonpackages.renpygame.renpygameCDD import PYGAMEENDEVENT
 
 __all__ = ["PuzzleEnum"]
 
@@ -426,6 +427,15 @@ def findSource(matrix: list[list[Way]]) -> list[tuple[int, int]]:
     return sources
 
 
+def findReceiver(matrix: list[list[Way]]) -> list[tuple[int, int]]:
+    receivers = []
+    for x in range(len(matrix)):
+        for y in range(len(matrix[x])):
+            if matrix[x][y].is_receiver:
+                receivers.append((x, y))
+    return receivers
+
+
 def check_connections(
     matrix: list[list[Way]], sources: list[tuple[int, int]]
 ) -> list[list[bool]]:
@@ -484,6 +494,13 @@ def check_connections_helper(
         check_connections_helper(matrix, x, y - 1, visited)
 
 
+def check_game_end(visited: list[list[bool]], receivers: list[tuple[int, int]]) -> bool:
+    for receiver in receivers:
+        if not visited[receiver[0]][receiver[1]]:
+            return False
+    return True
+
+
 sh = SharedData()
 
 
@@ -521,6 +538,11 @@ def send_have_water_event():
     visited = check_connections(sh.matrix, sh.source_list)
     myevent = pygame.event.Event(SEND_WATER_EVENT, visited=visited)
     pygame.event.post(myevent)
+
+    receivers = findReceiver(sh.matrix)
+    if check_game_end(visited, receivers):
+        myevent = pygame.event.Event(PYGAMEENDEVENT)
+        pygame.event.post(myevent)
 
 
 def my_game_first_step(width: int, height: int, st: float, at: float) -> pygame.Surface:

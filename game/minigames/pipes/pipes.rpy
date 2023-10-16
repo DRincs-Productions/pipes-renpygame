@@ -1,6 +1,30 @@
 init:
     $ import game.minigames.pipes.pipes as pipes
 
+init:
+    $ from game.minigames.pipes.pipes import PuzzleEnum
+
+    define first_puzzle = [
+        [
+            PuzzleEnum.OneWayONE_EIGHTY,
+            PuzzleEnum.ThreeWay,
+            PuzzleEnum.TwoWay,
+            PuzzleEnum.ThreeWay,
+        ],
+        [
+            PuzzleEnum.TwoWay,
+            PuzzleEnum.TwoWaySource,
+            PuzzleEnum.TwoWay,
+            PuzzleEnum.TwoWay,
+        ],
+        [
+            PuzzleEnum.TwoWay,
+            PuzzleEnum.TwoWay,
+            PuzzleEnum.TwoWay,
+            PuzzleEnum.OneWayZERO,
+        ],
+    ]
+
 label play_pipes_test:
 
     e "Welcome!"
@@ -10,7 +34,7 @@ label play_pipes_test:
 label pipes_retry_test:
     menu:
         "Pipes":
-            $ pipes.main((1920, 1080), 4)
+            $ pipes.main((1920, 1080), first_puzzle, 4)
 
     menu:
 
@@ -20,7 +44,7 @@ label pipes_retry_test:
 
             "Okay, get ready..."
 
-            jump aliens_retry
+            jump play_pipes_test
 
         "No thanks.":
 

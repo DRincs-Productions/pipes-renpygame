@@ -7,6 +7,9 @@ import renpy.exports as renpy
 
 from pythonpackages.renpygame.image import Image
 
+__all__ = ["PuzzleEnum"]
+
+
 CHECK_CONNECTIONS_EVENT = 423536456
 SEND_WATER_EVENT = 365685678
 UPDATE_IMAGE = 893457893457
@@ -352,26 +355,7 @@ class SharedData:
         self.source_list: list[tuple[int, int]] = []
 
 
-first_puzzle = [
-    [
-        PuzzleEnum.OneWayONE_EIGHTY,
-        PuzzleEnum.ThreeWay,
-        PuzzleEnum.TwoWay,
-        PuzzleEnum.ThreeWay,
-    ],
-    [
-        PuzzleEnum.TwoWay,
-        PuzzleEnum.TwoWaySource,
-        PuzzleEnum.TwoWay,
-        PuzzleEnum.TwoWay,
-    ],
-    [
-        PuzzleEnum.TwoWay,
-        PuzzleEnum.TwoWay,
-        PuzzleEnum.TwoWay,
-        PuzzleEnum.OneWayZERO,
-    ],
-]
+puzzle: list[list[PuzzleEnum]] = [[]]
 
 
 def convert_puzzle(
@@ -503,11 +487,13 @@ def check_connections_helper(
 sh = SharedData()
 
 
-def main(size: tuple[int, int], margin=0):
+def main(size: tuple[int, int], puzzle: list[list[PuzzleEnum]], margin=0):
     global game_screen_size
     game_screen_size = size
     global game_margin
     game_margin = margin
+    global game_puzzle
+    game_puzzle = puzzle
     # # Initialize a shared data
     global sh
 
@@ -541,7 +527,7 @@ def my_game_first_step(width: int, height: int, st: float, at: float) -> pygame.
     bestdepth = pygame.display.mode_ok((0, 0), 0, 32)
     screen = pygame.display.set_mode((0, 0), 0, bestdepth)
 
-    sh.matrix = convert_puzzle(first_puzzle, [sh.all], st, at)
+    sh.matrix = convert_puzzle(game_puzzle, [sh.all], st, at)
     sh.source_list = findSource(sh.matrix)
 
     send_have_water_event()

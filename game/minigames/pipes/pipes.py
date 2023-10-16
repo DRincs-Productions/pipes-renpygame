@@ -384,6 +384,7 @@ def convert_puzzle(
     st: float,
     at: float,
 ) -> list[list[Way]]:
+    """Convert a puzzle to a matrix of Way"""
     res: list[list[Way]] = []
     for y in range(len(puzzle)):
         res.append([])
@@ -427,6 +428,10 @@ def findSource(matrix: list[list[Way]]) -> list[tuple[int, int]]:
 def check_connections(
     matrix: list[list[Way]], sources: list[tuple[int, int]]
 ) -> list[list[bool]]:
+    """
+    Return a matrix of visited nodes.
+    source: is water source
+    """
     visited = [[False for _ in range(len(matrix[0]))] for _ in range(len(matrix))]
     for source in sources:
         visited[source[0]][source[1]] = True

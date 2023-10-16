@@ -146,7 +146,10 @@ class Way(pygame.sprite.Sprite):
                 myevent = pygame.event.Event(CHECK_CONNECTIONS_EVENT)
                 pygame.event.post(myevent)
         elif ev.type == SEND_WATER_EVENT:
-            if ev.visited[self.position[1]][self.position[0]]:
+            print(ev.visited)
+            print(self.x)
+            print(self.y)
+            if ev.visited[self.x][self.y]:
                 self.have_water = True
             else:
                 self.have_water = False
@@ -353,19 +356,19 @@ first_puzzle = [
     [
         PuzzleEnum.OneWay,
         PuzzleEnum.ThreeWay,
-        PuzzleEnum.FourWay,
+        PuzzleEnum.TwoWay,
         PuzzleEnum.ThreeWay,
     ],
     [
-        PuzzleEnum.FourWay,
+        PuzzleEnum.TwoWay,
         PuzzleEnum.TwoWay,
         PuzzleEnum.OneWay,
-        PuzzleEnum.FourWay,
+        PuzzleEnum.TwoWay,
     ],
     [
-        PuzzleEnum.TwoWaySource,
-        PuzzleEnum.FourWaySource,
-        PuzzleEnum.FourWaySource,
+        PuzzleEnum.TwoWay,
+        PuzzleEnum.TwoWay,
+        PuzzleEnum.TwoWay,
         PuzzleEnum.ThreeWaySource,
     ],
 ]
@@ -384,10 +387,12 @@ def convert_puzzle(
     st: float,
     at: float,
 ) -> list[list[Way]]:
-    """Convert a puzzle to a matrix of Way"""
-    res: list[list[Way]] = []
+    """Convert a puzzle to a matrix of Way, and invert the x and y"""
+    res: list[list[None | Way]] = [
+        [None for _ in range(len(puzzle))] for _ in range(len(puzzle[0]))
+    ]
+
     for y in range(len(puzzle)):
-        res.append([])
         for x in range(len(puzzle[y])):
             rotate = random.choice(
                 [
@@ -398,30 +403,30 @@ def convert_puzzle(
                 ]
             )
             if puzzle[y][x] == PuzzleEnum.OneWay:
-                res[y].append(OneWay(containers, (x, y), st, at, False, rotate))
+                res[x][y] = OneWay(containers, (x, y), st, at, False, rotate)
             elif puzzle[y][x] == PuzzleEnum.OneWaySource:
-                res[y].append(OneWay(containers, (x, y), st, at, True, rotate))
+                res[x][y] = OneWay(containers, (x, y), st, at, True, rotate)
             elif puzzle[y][x] == PuzzleEnum.TwoWay:
-                res[y].append(TwoWay(containers, (x, y), st, at, False, rotate))
+                res[x][y] = TwoWay(containers, (x, y), st, at, False, rotate)
             elif puzzle[y][x] == PuzzleEnum.TwoWaySource:
-                res[y].append(TwoWay(containers, (x, y), st, at, True, rotate))
+                res[x][y] = TwoWay(containers, (x, y), st, at, True, rotate)
             elif puzzle[y][x] == PuzzleEnum.ThreeWay:
-                res[y].append(ThreeWay(containers, (x, y), st, at, False, rotate))
+                res[x][y] = ThreeWay(containers, (x, y), st, at, False, rotate)
             elif puzzle[y][x] == PuzzleEnum.ThreeWaySource:
-                res[y].append(ThreeWay(containers, (x, y), st, at, True, rotate))
+                res[x][y] = ThreeWay(containers, (x, y), st, at, True, rotate)
             elif puzzle[y][x] == PuzzleEnum.FourWay:
-                res[y].append(FourWay(containers, (x, y), st, at, False, rotate))
+                res[x][y] = FourWay(containers, (x, y), st, at, False, rotate)
             elif puzzle[y][x] == PuzzleEnum.FourWaySource:
-                res[y].append(FourWay(containers, (x, y), st, at, True, rotate))
+                res[x][y] = FourWay(containers, (x, y), st, at, True, rotate)
     return res
 
 
 def findSource(matrix: list[list[Way]]) -> list[tuple[int, int]]:
     sources = []
-    for y in range(len(matrix)):
-        for x in range(len(matrix[y])):
-            if matrix[y][x].is_source:
-                sources.append((y, x))
+    for x in range(len(matrix)):
+        for y in range(len(matrix[x])):
+            if matrix[x][y].is_source:
+                sources.append((x, y))
     return sources
 
 
@@ -432,7 +437,9 @@ def check_connections(
     Return a matrix of visited nodes.
     source: is water source
     """
-    visited = [[False for _ in range(len(matrix[0]))] for _ in range(len(matrix))]
+    visited: list[list[bool]] = [
+        [False for _ in range(len(matrix[0]))] for _ in range(len(matrix))
+    ]
     for source in sources:
         visited[source[0]][source[1]] = True
         check_connections_helper(matrix, source[0], source[1], visited)
@@ -443,21 +450,42 @@ def check_connections_helper(
     matrix: list[list[Way]], x: int, y: int, visited: list[list[bool]]
 ) -> None:
     matrix_min = 0
-    matrix_max_x = len(matrix) - 1
-    matrix_max_y = len(matrix[0]) - 1
+    matrix_max_x = len(matrix[0]) - 1
+    matrix_max_y = len(matrix) - 1
 
-    if x - 1 >= matrix_min and matrix[x][y].up and not visited[x - 1][y]:
-        visited[x - 1][y] = True
-        check_connections_helper(matrix, x - 1, y, visited)
-    if x + 1 <= matrix_max_x and matrix[x][y].down and not visited[x + 1][y]:
-        visited[x + 1][y] = True
-        check_connections_helper(matrix, x + 1, y, visited)
-    if y - 1 >= matrix_min and matrix[x][y].left and not visited[x][y - 1]:
+    # * matrix have a x y inverted
+    if (
+        y - 1 >= matrix_min
+        and not visited[x][y - 1]
+        and matrix[x][y].left
+        and matrix[x][y - 1].right
+    ):
         visited[x][y - 1] = True
         check_connections_helper(matrix, x, y - 1, visited)
-    if y + 1 <= matrix_max_y and matrix[x][y].right and not visited[x][y + 1]:
+    if (
+        y + 1 <= matrix_max_x
+        and not visited[x][y + 1]
+        and matrix[x][y].right
+        and matrix[x][y + 1].left
+    ):
         visited[x][y + 1] = True
         check_connections_helper(matrix, x, y + 1, visited)
+    if (
+        x - 1 >= matrix_min
+        and not visited[x - 1][y]
+        and matrix[x][y].down
+        and matrix[x - 1][y].up
+    ):
+        visited[x - 1][y] = True
+        check_connections_helper(matrix, x - 1, y, visited)
+    if (
+        x + 1 <= matrix_max_y
+        and not visited[x + 1][y]
+        and matrix[x][y].up
+        and matrix[x + 1][y].down
+    ):
+        visited[x + 1][y] = True
+        check_connections_helper(matrix, x + 1, y, visited)
 
 
 sh = SharedData()
